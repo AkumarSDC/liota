@@ -45,6 +45,11 @@ from liota.lib.utilities.utility import systemUUID
 
 
 def mocked_os_path_root_ca_and_client_crt(path):
+    """
+    Method used to mock the behaviour of os.path.exists for some of the test cases.
+    :param path: Path to check
+    :return: Bool
+    """
     if path == "/etc/liota/mqtt/conf/ca.crt":
         return True
 
@@ -55,32 +60,44 @@ def mocked_os_path_root_ca_and_client_crt(path):
 
 
 def mocked_os_path_root_ca(path):
+    """
+    Method used to mock the behaviour of os.path.exists for some of the test cases.
+    :param path: Path to check
+    :return: Bool
+    """
     if path == "/etc/liota/mqtt/conf/ca.crt":
-        return True
-
-    return False
-
-
-def mocked_os_path(path):
-    if path == "/etc/liota/mqtt/conf/ca.crt":
-        return True
-
-    if path == "/etc/liota/mqtt/conf/client.crt":
         return True
 
     return False
 
 
 def custom_callback(body, message):
-    log.info("CUSTOM CALLBACK - {0}".format(str(body)))
+    """
+    Custom callback method for  
+    :param body: Message body
+    :param message: Kombu Message object.
+    return None
+    """
     message.ack()
 
 
-def test(*args, **kwargs):
+def mock_exception(*args, **kwargs):
+    """
+    Method used to raise the exception during the execution of some of the test case.
+    :param args: 
+    :param kwargs: 
+    :return: None
+    """
     raise Exception("Test Exception")
 
 
 def callback_method(*args, **kwargs):
+    """
+    Callback method used in AmqpWorkerThread class unit test cases.
+    :param args: 
+    :param kwargs: 
+    :return: None
+    """
     pass
 
 
@@ -100,7 +117,7 @@ def validate_json(obj):
 
 class GlobalFunctionsTest(unittest.TestCase):
     """
-        AmqpPublishMessagingAttributes unit test cases
+    Unit test cases of all public functions of Amqp transport. 
     """
 
     def setUp(self):
@@ -108,7 +125,7 @@ class GlobalFunctionsTest(unittest.TestCase):
         Method to initialise the parameters for global functions.
         :return: None
         """
-        # EdgeSystem name
+        # EdgeSystem configurations
         self.edge_system = Dell5KEdgeSystem("TestEdgeSystem")
 
     def tearDown(self):
@@ -116,6 +133,7 @@ class GlobalFunctionsTest(unittest.TestCase):
         Method to cleanup the resource created during the execution of test case.
         :return: None
         """
+        # EdgeSystem configurations
         self.edge_system = None
 
     def test_auto_generate_exchage_name(self):
@@ -133,7 +151,7 @@ class GlobalFunctionsTest(unittest.TestCase):
         Test case to test the implementation of auto_generate_routing_key method for request.
         :return: None 
         """
-        # Check the implementation of auto_generate_routing_key
+        # Check the implementation of auto_generate_routing_key for request
         self.assertEqual("liota." + systemUUID().get_uuid(self.edge_system.name) + ".request",
                          auto_generate_routing_key(self.edge_system.name, for_publish=True),
                          "Invalid implementation of auto_generate_routing_key")
@@ -143,7 +161,7 @@ class GlobalFunctionsTest(unittest.TestCase):
         Test case to test the implementation of auto_generate_routing_key method for response.
         :return: None 
         """
-        # Check the implementation of auto_generate_routing_key
+        # Check the implementation of auto_generate_routing_key for response
         self.assertEqual("liota." + systemUUID().get_uuid(self.edge_system.name) + ".response",
                          auto_generate_routing_key(self.edge_system.name, for_publish=False),
                          "Invalid implementation of auto_generate_routing_key")
@@ -161,7 +179,7 @@ class GlobalFunctionsTest(unittest.TestCase):
 
 class AmqpPublishMessagingAttributesTest(unittest.TestCase):
     """
-    AmqpPublishMessagingAttributes unit test cases
+    Unit test cases for AmqpPublishMessagingAttributes class
     """
 
     def setUp(self):
@@ -169,8 +187,10 @@ class AmqpPublishMessagingAttributesTest(unittest.TestCase):
         Method to initialise the AmqpPublishMessagingAttributes parameters.
         :return: None
         """
-
+        # Edge system configurations
         self.edge_system_name = Dell5KEdgeSystem("TestEdgeSystem")
+
+        # Amqp configurations
         self.exchange_name = "test_amqp_exchange",
         self.exchange_type = DEFAULT_EXCHANGE_TYPE
         self.exchange_durable = False
@@ -190,7 +210,10 @@ class AmqpPublishMessagingAttributesTest(unittest.TestCase):
         Method to cleanup the resource created during the execution of test case.
         :return: None
         """
+        # Edge system configurations
         self.edge_system_name = None
+
+        # Amqp configurations
         self.exchange_name = None
         self.exchange_type = None
         self.exchange_durable = None
@@ -312,7 +335,10 @@ class AmqpConsumeMessagingAttributesTest(unittest.TestCase):
         Method to initialise the AmqpConsumeMessagingAttributes parameters.
         :return: None
         """
+        # Edge system configurations
         self.edge_system_name = Dell5KEdgeSystem("TestEdgeSystem")
+
+        # Amqp configurations
         self.exchange_name = "test_amqp_exchange"
         self.exchange_type = DEFAULT_EXCHANGE_TYPE
         self.exchange_durable = False
@@ -346,7 +372,10 @@ class AmqpConsumeMessagingAttributesTest(unittest.TestCase):
         Method to cleanup the resource created during the execution of test case.
         :return: None
         """
+        # Edge system configurations
         self.edge_system_name = None
+
+        # Amqp configurations
         self.exchange_name = None
         self.exchange_type = None
         self.exchange_durable = None
@@ -421,7 +450,7 @@ class AmqpConsumeMessagingAttributesTest(unittest.TestCase):
         Test the validation for None routing_keys if exchange_type is other than "headers".
         :return: None
         """
-        # Check implementation raising the TypeError
+        # Check implementation raising the ValueError
         with self.assertRaises(ValueError):
             AmqpConsumeMessagingAttributes(exchange_type=DEFAULT_EXCHANGE_TYPE)
 
@@ -430,7 +459,7 @@ class AmqpConsumeMessagingAttributesTest(unittest.TestCase):
         Test the validation for header exchange_type.
         :return: None
         """
-        # Check implementation raising the TypeError
+        # Check implementation raising the ValueError
         with self.assertRaises(ValueError):
             AmqpConsumeMessagingAttributes(exchange_type="headers")
 
@@ -439,6 +468,7 @@ class AmqpConsumeMessagingAttributesTest(unittest.TestCase):
         Test the validation for routing_keys type.
         :return: None
         """
+        # Check implementation raising the TypeError
         with self.assertRaises(TypeError):
             AmqpConsumeMessagingAttributes(routing_keys="invalid")
 
@@ -484,36 +514,16 @@ class ConsumerWorkerThreadTest(unittest.TestCase):
         Method to initialise the ConsumerWorkerThread parameters.
         :return: None
         """
+        # Kombu's configurations
         self.kombu_queues = []
         self.callbacks = []
         self.prefetch_size_list = []
         self.prefetch_count_list = []
         self.callbacks = []
 
+        # Broker configurations
         self.url = "localhost"
         self.port = 5672
-
-        """
-        self.consume_msg_attr = AmqpConsumeMessagingAttributes(exchange_name="test-exchange",
-                                                               routing_keys=["test1", "test2"],
-                                                               callback=None)
-        
-        self.exchange = Exchange(name=self.consume_msg_attr.exchange_name, type=self.consume_msg_attr.exchange_type)
-        self.exchange.durable = self.consume_msg_attr.exchange_durable
-        self.exchange.delivery_mode = 1
-
-        self.kombu_queue = KombuQueue(name=self.consume_msg_attr.queue_name,
-                                      exchange=self.exchange, binding_arguments=self.consume_msg_attr.header_args)
-
-        self.kombu_queue.durable = self.consume_msg_attr.queue_durable
-        self.kombu_queue.exclusive = self.consume_msg_attr.queue_exclusive
-        self.kombu_queue.auto_delete = self.consume_msg_attr.queue_auto_delete
-        self.kombu_queue.no_ack = self.consume_msg_attr.queue_no_ack
-        self.kombu_queues.append(self.kombu_queue)
-
-        self.prefetch_size_list.append(self.consume_msg_attr.prefetch_size)
-        self.prefetch_count_list.append(self.consume_msg_attr.prefetch_count)
-        """
 
         # Mocking the constructor of Connection class
         with mock.patch.object(Connection, "__init__") as mock_init:
@@ -525,6 +535,14 @@ class ConsumerWorkerThreadTest(unittest.TestCase):
         Method to cleanup the resource created during the execution of test case.
         :return: None
         """
+        # Kombu's configurations
+        self.kombu_queues = None
+        self.callbacks = None
+        self.prefetch_size_list = None
+        self.prefetch_count_list = None
+        self.callbacks = None
+
+        # Broker configurations
         self.url = None
         self.port = None
         self.amqp_connection = None
@@ -533,6 +551,7 @@ class ConsumerWorkerThreadTest(unittest.TestCase):
     def test_class_implementation(self, mocked_start):
         """
         Test the ConsumerWorkerThread class implementation.
+        :param mocked_start: Mocked start method from Thread class 
         :return: None
         """
 
@@ -550,8 +569,11 @@ class ConsumerWorkerThreadTest(unittest.TestCase):
     def test_run_implementation(self, mocked_init, mocked_run):
         """
         Test the ConsumerWorkerThread run method implementation.
+        :param mocked_init: Mocked init method from AmqpConsumerWorker class
+        :param mocked_run: Mocked run method from AmqpConsumerWorker class
         :return: None
         """
+
         # Mocked method return value
         mocked_init.return_value = None
 
@@ -570,12 +592,18 @@ class ConsumerWorkerThreadTest(unittest.TestCase):
     @mock.patch.object(AmqpConsumerWorker, '__init__')
     def test_run_implementation_exception(self, mocked_init, mocked_run, mocked_start):
         """
-        Test the ConsumerWorkerThread run method implementation.
+        Test the ConsumerWorkerThread run method exception flow.
+        :param mocked_init: Mocked init method from AmqpConsumerWorker class
+        :param mocked_run: Mocked run method from AmqpConsumerWorker class
+        :param mocked_start: Mocked start method from ConsumerWorkerThread class
         :return: None
         """
 
-        # Raise Exception
-        mocked_init.side_effect = test
+        # Assign return value to mocked method
+        mocked_init.return_value = None
+
+        # Assign method to be invoked on calling the mocked method
+        mocked_init.side_effect = mock_exception
 
         with mock.patch.object(ConsumerWorkerThread, 'stop') as mock_stop:
             consumer_thread = ConsumerWorkerThread(self.amqp_connection, self.kombu_queues, self.callbacks,
@@ -592,10 +620,13 @@ class ConsumerWorkerThreadTest(unittest.TestCase):
     def test_stop_implementation(self, mocked_init, mocked_run, mocked_start):
         """
         Test the ConsumerWorkerThread stop method implementation.
+        :param mocked_init: Mocked init method from AmqpConsumerWorker class
+        :param mocked_run: Mocked run method from AmqpConsumerWorker class
+        :param mocked_start: Mocked start method from ConsumerWorkerThread class
         :return: None
         """
 
-        # Assign return type to constructor
+        # Assign return value to constructor
         mocked_init.return_value = None
 
         consumer_thread = ConsumerWorkerThread(self.amqp_connection, self.kombu_queues, self.callbacks,
@@ -615,10 +646,13 @@ class ConsumerWorkerThreadTest(unittest.TestCase):
     def test_stop_implementation_stopped_consumer(self, mocked_init, mocked_run, mocked_start):
         """
         Test the ConsumerWorkerThread stop method implementation for stopped consumer flow.
-        :return: None
+        :param mocked_init: Mocked init method from AmqpConsumerWorker class
+        :param mocked_run: Mocked run method from AmqpConsumerWorker class
+        :param mocked_start: Mocked start method from ConsumerWorkerThread class
+        :return: None 
         """
 
-        # Assign return type to constructor
+        # Assign return value to constructor
         mocked_init.return_value = None
 
         consumer_thread = ConsumerWorkerThread(self.amqp_connection, self.kombu_queues, self.callbacks,
@@ -643,16 +677,20 @@ class AmqpConsumerWorkerTest(unittest.TestCase):
         Method to initialise the AmqpConsumerWorkerTest parameters.
         :return: None
         """
+
+        # Broker configuration
+        self.url = "localhost"
+        self.port = 5672
+
+        # Consumer messaging attributes
+        self.consume_msg_attr = AmqpConsumeMessagingAttributes(exchange_name="test-exchange",
+                                                               routing_keys=["test1-key"], prefetch_count=1,
+                                                               prefetch_size=1)
+        # Kombu's configurations
         self.kombu_queues = []
         self.callbacks = [callback_method]
         self.prefetch_size_list = []
         self.prefetch_count_list = []
-
-        self.url = "localhost"
-        self.port = 5672
-        self.consume_msg_attr = AmqpConsumeMessagingAttributes(exchange_name="test-exchange",
-                                                               routing_keys=["test1-key"], prefetch_count=1,
-                                                               prefetch_size=1)
 
         self.exchange = Exchange(name=self.consume_msg_attr.exchange_name, type=self.consume_msg_attr.exchange_type)
         self.exchange.durable = self.consume_msg_attr.exchange_durable
@@ -684,10 +722,20 @@ class AmqpConsumerWorkerTest(unittest.TestCase):
         Method to cleanup the resource created during the execution of test case.
         :return: None
         """
-        self.url = None
-        self.port = None
+        # Kombu's configuration
+        self.kombu_queues = None
+        self.callbacks = None
+        self.prefetch_size_list = None
+        self.prefetch_count_list = None
+        self.exchange = None
+        self.kombu_queue = None
         self.amqp_connection = None
         self.consumer = None
+
+        # Broker configurations
+        self.url = None
+        self.port = None
+        self.consume_msg_attr = None
 
     def test_class_implementation(self):
         """
@@ -722,7 +770,7 @@ class AmqpConsumerWorkerTest(unittest.TestCase):
 
     def test_init_validation_queues_callbacks(self):
         """
-        Test the validation for connection object.
+        Test the validation for queues callback object.
         :return: None 
         """
 
@@ -747,7 +795,7 @@ class AmqpConsumerWorkerTest(unittest.TestCase):
         Test the AmqpConsumerWorker class implementation without callbacks parameter.
         :return:None 
         """
-        # Creating object with empty callBacks list
+        # Creating object with empty callbacks list
         test_amqp_consumer_worker = AmqpConsumerWorker(self.amqp_connection, self.kombu_queues, [],
                                                        self.prefetch_count_list, self.prefetch_count_list)
 
@@ -756,8 +804,9 @@ class AmqpConsumerWorkerTest(unittest.TestCase):
     @mock.patch.object(Message, "ack")
     def test_on_message(self, mocked_ack):
         """
-        Test the implementation for connection object.
-        :return: None 
+        Test the implementation of on_message method.
+        :param mocked_ack: Mocked ack method from Kombu's Message class 
+        :return: None
         """
         # Create AmqpConsumerWorker object
         amqp_consumer = AmqpConsumerWorker(self.amqp_connection, self.kombu_queues, self.callbacks,
@@ -775,9 +824,12 @@ class AmqpConsumerWorkerTest(unittest.TestCase):
     @mock.patch.object(Consumer, "__init__")
     def test_get_consumers_implementation(self, mocked_init, mocked_qos):
         """
-        Test the implementation of get consumers.
-        :return: None 
+        Test the implementation of get_consumers.
+        :param mocked_init: Mocked init from Consumer class 
+        :param mocked_qos: Mocked qos from Consumer class
+        :return: None
         """
+
         # Assign return value to mocked init
         mocked_init.return_value = None
 
@@ -807,7 +859,7 @@ class AmqpConsumerWorkerTest(unittest.TestCase):
 
 class AmqpTest(unittest.TestCase):
     """
-       Amqp unit test cases
+    Amqp unit test cases
     """
 
     def setUp(self):
@@ -844,6 +896,7 @@ class AmqpTest(unittest.TestCase):
         # Encapsulate TLS parameters
         self.tls_conf = TLSConf(self.cert_required, self.tls_version, self.cipher)
 
+        # Amqp configurations
         self.amqp_msg_attr = [AmqpConsumeMessagingAttributes(exchange_name="test1_exchange",
                                                              routing_keys=["test1", "test2"],
                                                              callback=custom_callback),
@@ -854,6 +907,10 @@ class AmqpTest(unittest.TestCase):
             "test": "test1"
         }
 
+        self.amqp_pub_msg_attr = AmqpPublishMessagingAttributes(edge_system_name=self.edge_system.name,
+                                                                exchange_type=DEFAULT_EXCHANGE_TYPE,
+                                                                exchange_durable=False)
+        # Create amqp client
         with mock.patch.object(Amqp, "_init_or_re_init"):
             self.amqp_client = Amqp(self.url, self.port, self.identity, self.tls_conf, self.enable_authentication,
                                     self.connection_timeout_sec)
@@ -863,7 +920,40 @@ class AmqpTest(unittest.TestCase):
         Method to cleanup the resource created during the execution of test case.
         :return: None
         """
+
+        # EdgeSystem name
         self.edge_system = None
+
+        # Broker parameters
+        self.url = None
+        self.port = None
+        self.amqp_username = None
+        self.amqp_password = None
+        self.enable_authentication = None
+        self.connection_timeout_sec = None
+
+        # EdgeSystem name
+        self.edge_system = None
+
+        # TLS configurations
+        self.root_ca_cert = None
+        self.client_cert_file = None
+        self.client_key_file = None
+        self.cert_required = None
+        self.tls_version = None
+        self.cipher = None
+
+        # Encapsulate the authentication details
+        self.identity = None
+
+        # Encapsulate TLS parameters
+        self.tls_conf = None
+
+        # Amqp configurations
+        self.amqp_msg_attr = None
+        self.header_args = None
+        self.amqp_pub_msg_attr = None
+        self.amqp_client = None
 
     def test_class_implementation(self):
         """
@@ -898,9 +988,13 @@ class AmqpTest(unittest.TestCase):
     @mock.patch.object(Amqp, "disconnect")
     def test_init_or_re_init_implementation(self, mocked_disconnect, mocked_connect_soc, _initialize_producer):
         """
-        Test the _init_or_re_init method implementation. 
-        :return: None 
+        Test the _init_or_re_init method implementation.
+        :param mocked_disconnect: Mocked disconnect method from Amqp class 
+        :param mocked_connect_soc: Mocked connect_soc method from Amqp class
+        :param _initialize_producer: Mocked _initialize_producer from Amqp class
+        :return: None
         """
+
         # Create amqp client
         self.amqp_client = Amqp(self.url, self.port, self.identity, self.tls_conf, self.enable_authentication,
                                 self.connection_timeout_sec)
@@ -922,8 +1016,13 @@ class AmqpTest(unittest.TestCase):
     def test_disconnect_implementation(self, mocked_reset, mocked_disconnect_consumer, mocked_disconnect_producer,
                                        mocked_connect_soc, mocked_initialize_producer):
         """
-        Test the disconnect method implementation. 
-        :return: None 
+        Test the disconnect method implementation.
+        :param mocked_reset: Mocked reset method from Kombu's pools class
+        :param mocked_disconnect_consumer: Mocked disconnect_consumer method from Amqp class 
+        :param mocked_disconnect_producer: Mocked disconnect_producer method from Amqp class
+        :param mocked_connect_soc: Mocked connect_soc from Amqp class
+        :param mocked_initialize_producer: Mocked _initialize_producer method from Amqp class
+        :return: None
         """
 
         # Create amqp client
@@ -951,11 +1050,16 @@ class AmqpTest(unittest.TestCase):
                                                       mocked_disconnect_producer,
                                                       mocked_connect_soc, mocked_initialize_producer):
         """
-        Test the disconnect method implementation for exception flow. 
-        :return: None 
+        Test the disconnect method implementation for exception flow.
+        :param mocked_reset: Mocked reset method from Kombu's pool class
+        :param mocked_disconnect_consumer: Mocked disconnect_consumer method from Amqp class 
+        :param mocked_disconnect_producer: 
+        :param mocked_connect_soc: 
+        :param mocked_initialize_producer: 
+        :return: None
         """
-
-        mocked_reset.side_effect = test
+        # Assign method to be invoked on mocked method call
+        mocked_reset.side_effect = mock_exception
 
         with self.assertRaises(Exception):
             # Create amqp client
@@ -980,11 +1084,17 @@ class AmqpTest(unittest.TestCase):
                                                       mocked_disconnect_producer,
                                                       mocked_connect_soc, mocked_initialize_producer):
         """
-        Test the disconnect method implementation for exception flow. 
-        :return: None 
+        Test the disconnect method implementation for exception flow.
+        :param mocked_reset: Mocked reset from Kobus pools class
+        :param mocked_disconnect_consumer: Mocked disconnect_consumer method from Amqp class
+        :param mocked_disconnect_producer: Mocked disconnect_producer method from Amqp class
+        :param mocked_connect_soc: Mocked connect_soc method from Amqp class
+        :param mocked_initialize_producer: Mocked _initialize_producer method from Amqp class
+        :return: None
         """
 
-        mocked_reset.side_effect = test
+        # Assign method to be invoked on mocked method call
+        mocked_reset.side_effect = mock_exception
 
         with self.assertRaises(Exception):
             # Create amqp client
@@ -1004,9 +1114,12 @@ class AmqpTest(unittest.TestCase):
     @mock.patch.object(Amqp, "_initialize_producer")
     def test_connect_implementation_username_validation(self, mocked_initialize_producer, mocked_disconnect):
         """
-        Test the connect method validation for empty username. 
-        :return: None 
+        Test the connect method validation for empty username.
+        :param mocked_initialize_producer: Mocked  _initialize_producer method from Amqp class
+        :param mocked_disconnect: Mocked disconnect method from Amqp class
+        :return: None
         """
+
         # Check the implementation raising the ValueError for empty username
         with self.assertRaises(ValueError):
             # Encapsulate the authentication details
@@ -1021,9 +1134,12 @@ class AmqpTest(unittest.TestCase):
     @mock.patch.object(Amqp, "_initialize_producer")
     def test_connect_implementation_password_validation(self, mocked_initialize_producer, mocked_disconnect):
         """
-        Test the connect method validation for empty password. 
-        :return: None 
+        Test the connect method validation for empty password.
+        :param mocked_initialize_producer: Mocked _initialize_producer method from Amqp class
+        :param mocked_disconnect: Mocked disconnect from Amqp class
+        :return: None
         """
+
         # Check the implementation raising the ValueError for empty username
         with self.assertRaises(ValueError):
             # Encapsulate the authentication details
@@ -1038,9 +1154,12 @@ class AmqpTest(unittest.TestCase):
     @mock.patch.object(Amqp, "_initialize_producer")
     def test_connect_implementation_root_ca_path_validation(self, mocked_initialize_producer, mocked_disconnect):
         """
-        Test the connect method validation for root_ca path exists. 
-        :return: None 
+        Test the connect method validation for root_ca path exists.
+        :param mocked_initialize_producer: Mocked _initialize_producer method from Amqp class
+        :param mocked_disconnect: Mocked disconnect from Amqp class
+        :return: None
         """
+
         # Check the implementation raising the ValueError for empty username
         with self.assertRaises(ValueError):
             # Encapsulate the authentication details
@@ -1055,9 +1174,12 @@ class AmqpTest(unittest.TestCase):
     @mock.patch.object(Amqp, "_initialize_producer")
     def test_connect_implementation_root_ca_empty_validation(self, mocked_initialize_producer, mocked_disconnect):
         """
-        Test the connect method validation for empty root_ca path. 
+        Test the connect method validation for empty root_ca path.
+        :param mocked_initialize_producer: Mocked  _initialize_producer method from Amqp class
+        :param mocked_disconnect: Mocked disconnect from Amqp class
         :return: None 
         """
+
         # Check the implementation raising the ValueError for empty username
         with self.assertRaises(ValueError):
             # Encapsulate the authentication details
@@ -1074,9 +1196,13 @@ class AmqpTest(unittest.TestCase):
     def test_connect_implementation_client_cert_path_validation(self, mocked_exists,
                                                                 mocked_initialize_producer, mocked_disconnect):
         """
-        Test the connect method validation for client cert path exists. 
-        :return: None 
+        Test the connect method validation for client cert path exists.
+        :param mocked_exists: Mocked exists from os.path
+        :param mocked_initialize_producer: Mocked _initialize_producer from Amqp class
+        :param mocked_disconnect: Mocked disconenct method from Amqp class
+        :return: None
         """
+        # Assign method to be invoked on mocked method call
         mocked_exists.side_effect = mocked_os_path_root_ca
 
         # Check the implementation raising the ValueError for empty username
@@ -1095,9 +1221,14 @@ class AmqpTest(unittest.TestCase):
     def test_connect_implementation_client_key_path_validation(self, mocked_exists,
                                                                mocked_initialize_producer, mocked_disconnect):
         """
-        Test the connect method validation for client cert path exists. 
-        :return: None 
+        Test the connect method validation for client cert path.
+        :param mocked_exists: Mocked exists from os.path
+        :param mocked_initialize_producer: Mocked _initialize_producer from Amqp class
+        :param mocked_disconnect: Mocked disconnect from Amqp class
+        :return: None
         """
+
+        # Assign method to be invoked on calling mocked method
         mocked_exists.side_effect = mocked_os_path_root_ca_and_client_crt
 
         # Check the implementation raising the ValueError for empty client cert.
@@ -1116,7 +1247,10 @@ class AmqpTest(unittest.TestCase):
     def test_connect_implementation_without_client_cert(self, mocked_exists,
                                                         mocked_initialize_producer, mocked_disconnect):
         """
-        Test the connect method validation for valid client_key and empty client cert 
+        Test the connect method validation for valid client_key and empty client cert
+        :param mocked_exists: Mocked exists from os.path 
+        :param mocked_initialize_producer: Mocked _initialize_producer from Amqp class
+        :param mocked_disconnect: Mocked disconnect from Amqp
         :return: None 
         """
         # Assign return value to os.path.exists
@@ -1138,9 +1272,13 @@ class AmqpTest(unittest.TestCase):
     def test_connect_implementation_without_client_key(self, mocked_exists,
                                                        mocked_initialize_producer, mocked_disconnect):
         """
-        Test the connect method validation for valid client cert and empty client key. 
+        Test the connect method validation for valid client cert and empty client key.
+        :param mocked_exists: Mocked exists from os.path
+        :param mocked_initialize_producer: Mocked _initialize_producer method from Amqp class
+        :param mocked_disconnect: Mocked disconnect method from Amqp class 
         :return: None 
         """
+
         # Assign return value to os.path.exists
         mocked_exists.return_value = True
 
@@ -1161,9 +1299,14 @@ class AmqpTest(unittest.TestCase):
     def test_connect_implementation_with_ssl_username_password(self, mocked_init, mocked_exists,
                                                                _initialize_producer, disconnect):
         """
-        Test the connect method validation for valid client cert and empty client key. 
-        :return: None 
+        Test the connect method implementation for connection with SSL and Username-Password.
+        :param mocked_init: Mocked init method from Connection class
+        :param mocked_exists: Mocked exists from os.path
+        :param _initialize_producer: Mocked _initialize_producer from Amqp class
+        :param disconnect: Mocked disconnect method from Amqp
+        :return: None
         """
+
         # Assign return value to os.path.exists
         mocked_exists.return_value = True
         mocked_init.return_value = None
@@ -1186,22 +1329,23 @@ class AmqpTest(unittest.TestCase):
 
     @mock.patch.object(Amqp, "disconnect")
     @mock.patch.object(Amqp, "_initialize_producer")
-    @mock.patch.object(os.path, "exists")
     @mock.patch.object(Connection, "__init__")
-    def test_connect_implementation_without_ssl_username_password(self, mocked_init, mocked_exists,
-                                                                  _initialize_producer, disconnect):
+    def test_connect_implementation_without_ssl_username_password(self, mocked_init, _initialize_producer, disconnect):
         """
-        Test the connect method validation for valid client cert and empty client key. 
-        :return: None 
+        Test the connect method for the connection without SSL and username-password configuration.
+        :param mocked_init: Mocked init method from Connection class
+        :param _initialize_producer: Mocked _initialize_producer method from Amqp class
+        :param disconnect: Mocked disconnect method from Amqp class
+        :return: None
         """
         # Assign return value to os.path.exists
-        mocked_exists.return_value = True
         mocked_init.return_value = None
 
         # Create amqp client
         self.amqp_client = Amqp(self.url, self.port, None, None, False,
                                 self.connection_timeout_sec)
 
+        # Check Connection init called with following params
         mocked_init.assert_called_with(hostname=self.url, port=self.port, transport="pyamqp",
                                        userid=None, password=None,
                                        ssl=False, connect_timeout=self.connection_timeout_sec)
@@ -1213,13 +1357,18 @@ class AmqpTest(unittest.TestCase):
     def test_connect_implementation_exception_flow(self, mocked_init, mocked_exists, _initialize_producer,
                                                    disconnect):
         """
-        Test the connect method exception flow. 
-        :return: None 
+        Test the connect method exception flow.
+        :param mocked_init: Mocked init method from Connection class 
+        :param mocked_exists: Mocked exists method from os.path
+        :param _initialize_producer: Mocked _initialize_producer method from Amqp class
+        :param disconnect: Mocked disconnect method from Amqp class
+        :return: None
         """
+
         # Assign return value to os.path.exists
         mocked_exists.return_value = True
         mocked_init.return_value = None
-        mocked_init.side_effect = test
+        mocked_init.side_effect = mock_exception
 
         with self.assertRaises(Exception):
             # Create amqp client
@@ -1231,16 +1380,22 @@ class AmqpTest(unittest.TestCase):
     @mock.patch.object(Connection, "channel")
     @mock.patch.object(Resource, "acquire")
     @mock.patch.object(Producer, "__init__")
-    def test_initialize_producer_implementation(self, mocked_production_init, mocked_acquire, mocked_channel,
+    def test_initialize_producer_implementation(self, mocked_producer_init, mocked_acquire, mocked_channel,
                                                 mocked_disconnect, mocked_connection_init, mocked_exists):
         """
-        Test the _initialize_producer method implementation. 
-        :return: None 
+        Test the _initialize_producer method implementation.
+        :param mocked_producer_init: Mocked init method from Producer class
+        :param mocked_acquire: Mocked acquire from Resource class
+        :param mocked_channel: Mocked channel from Connection class
+        :param mocked_disconnect: Mocked disconnect from Amqp class
+        :param mocked_connection_init: Mocked init from Connection class
+        :param mocked_exists: Mocked exists method from os.path
+        :return: None
         """
 
-        mocked_production_init.return_value = None
+        # Assign return_value to mocked methods
+        mocked_producer_init.return_value = None
         mocked_connection_init.return_value = None
-
         mocked_exists.return_value = True
 
         # Setup ssl options
@@ -1273,8 +1428,8 @@ class AmqpTest(unittest.TestCase):
         # Check channel method call has been made
         mocked_channel.assert_called()
 
-        # Check Production object creation has been made
-        mocked_production_init.assert_called_with("Connection channel")
+        # Check Producer object creation has been made
+        mocked_producer_init.assert_called_with("Connection channel")
 
     @mock.patch.object(Amqp, "_initialize_producer")
     @mock.patch.object(os.path, "exists")
@@ -1285,16 +1440,24 @@ class AmqpTest(unittest.TestCase):
                                             mocked_initialize_producer):
         """
         Method to test the implementation of _initialize_consumer_connection method.
-        :return: None 
+        :param mocked_acquire: Mocked acquire from Resource class
+        :param mocked_disconnect: Mocked disconenct from Amqp class
+        :param mocked_init: Mocked init from Connection class
+        :param mocked_exists: Mocked exists from os.path
+        :param mocked_initialize_producer: Mocked _initialize_producer from Amqp class
+        :return: None
         """
 
+        # Assign return value to mocked methods
         mocked_init.return_value = None
 
         amqp_client = Amqp(self.url, self.port, self.identity, self.tls_conf,
                            self.enable_authentication, self.connection_timeout_sec)
 
+        # Call _initialize_consumer_connection method
         amqp_client._initialize_consumer_connection()
 
+        # Check implementation calling the acquire method
         mocked_acquire.assert_called()
 
     @mock.patch.object(Amqp, "_initialize_producer")
@@ -1303,18 +1466,24 @@ class AmqpTest(unittest.TestCase):
     @mock.patch.object(Amqp, "disconnect")
     @mock.patch.object(Resource, "acquire")
     def test_initialize_consumer_connection_exception_flow(self, mocked_acquire, mocked_disconnect, mocked_init,
-                                                           mocked_exists,
-                                                           mocked_initialize_producer):
+                                                           mocked_exists, mocked_initialize_producer):
         """
         Method to test the implementation of _initialize_consumer_connection method for exception flow.
-        :return: None 
+        :param mocked_acquire: Mocked acquire from Resouce class
+        :param mocked_disconnect: Mocked disconnect from Amqp class
+        :param mocked_init: Mocked init from Connection class
+        :param mocked_exists: Mocked exists from os.path
+        :param mocked_initialize_producer: Mocked _initialize_producer from Amqp class
+        :return: None
         """
+
         # Assign None return type to mocked init method
         mocked_init.return_value = None
 
         # Raise exception on method call
-        mocked_acquire.side_effect = test
+        mocked_acquire.side_effect = mock_exception
 
+        # Check underline implementation for Exception
         with self.assertRaises(Exception):
             # Create Amqp client
             amqp_client = Amqp(self.url, self.port, self.identity, self.tls_conf,
@@ -1332,12 +1501,17 @@ class AmqpTest(unittest.TestCase):
     @mock.patch.object(Amqp, "disconnect")
     @mock.patch.object(Resource, "acquire")
     def test_consumer_validation_exception_flow(self, mocked_acquire, mocked_disconnect, mocked_init,
-                                                mocked_exists,
-                                                mocked_initialize_producer):
+                                                mocked_exists, mocked_initialize_producer):
         """
-        Method to test the implementation of _initialize_consumer_connection method for exception flow.
-        :return: None 
+        Method to test the validation of _initialize_consumer_connection method for exception flow.
+        :param mocked_acquire: Mocked acquire from Resource class
+        :param mocked_disconnect: Mocked disconnect from Amqp class
+        :param mocked_init: Mocked init from Connection class
+        :param mocked_exists: Mocked exists from os.path
+        :param mocked_initialize_producer: Mocked _initialize_producer from Amqp class
+        :return: None
         """
+
         # Assign None return type to mocked init method
         mocked_init.return_value = None
 
@@ -1358,9 +1532,16 @@ class AmqpTest(unittest.TestCase):
     def test_consumer_implementation(self, mocked_worker_init, mocked_acquire, mocked_disconnect, mocked_init,
                                      mocked_exists, mocked_initialize_producer):
         """
-        Test the implementation of consumer method implementation.
-        :return: None 
+        Test the implementation of consumer method.
+        :param mocked_worker_init: Mocked init method from ConsumerWorkerThread class
+        :param mocked_acquire: Mocked acquire method from Resource class
+        :param mocked_disconnect: Mocked disconnect method from Amqp class
+        :param mocked_init: Mocked init method from Connection class
+        :param mocked_exists: Mocked exists from os.path
+        :param mocked_initialize_producer: Mocked _initialize_producer from Amqp class
+        :return: None
         """
+
         # Assign None return type to mocked init method
         mocked_init.return_value = None
         mocked_worker_init.return_value = None
@@ -1424,13 +1605,21 @@ class AmqpTest(unittest.TestCase):
                                                            mocked_init, mocked_exists, mocked_initialize_producer):
         """
         Test the implementation of consumer method implementation for headers exchange type.
-        :return: None 
+        :param mocked_worker_init: Mocked init from ConsumerWorkerThread class
+        :param mocked_acquire: Mocked acquire from Resource class
+        :param mocked_disconnect: Mocked disconnect from Amqp
+        :param mocked_init: Mocked init from Connection class
+        :param mocked_exists: Mocked exists from os.path
+        :param mocked_initialize_producer: Mocked _initialize_producer from Amqp class
+        :return: None
         """
+
         # Assign None return type to mocked init method
         mocked_init.return_value = None
         mocked_worker_init.return_value = None
         mocked_acquire.return_value = None
 
+        # Create consume msg attributes
         self.amqp_msg_attr = [AmqpConsumeMessagingAttributes(exchange_name="test1_exchange", exchange_type="headers",
                                                              routing_keys=["test1", "test2"],
                                                              header_args=self.header_args),
@@ -1483,8 +1672,275 @@ class AmqpTest(unittest.TestCase):
             prefetch_size_list.append(consume_msg_attr.prefetch_size)
             prefetch_count_list.append(consume_msg_attr.prefetch_count)
 
-        # Check underline implementation calling woker thread with following params
+        # Check underline implementation creating the worker with following params
         mocked_worker_init.assert_called_with(None, kombu_queues, callbacks, prefetch_size_list, prefetch_count_list)
+
+    @mock.patch.object(Exchange, "declare")
+    def test_declare_publish_exchange_implementation(self, mocked_declare):
+        """
+        Test the implementation of declare_publish_exchange method.
+        :param mocked_declare: Mocked declare from Exchange class 
+        :return: None
+        """
+
+        # Call the declare_publish_exchange
+        self.amqp_client.declare_publish_exchange(self.amqp_pub_msg_attr)
+
+        # Check declare method call has been made
+        mocked_declare.assert_called()
+
+        # CHeck the value of is_exchange_declared variable
+        self.assertTrue(self.amqp_pub_msg_attr.is_exchange_declared)
+
+    def test_declare_publish_exchange_validation(self):
+        """
+        Test the validation of declare_publish_exchange method.
+        :return: None 
+        """
+
+        # Check implementation raising the TypeError
+        with self.assertRaises(TypeError):
+            self.amqp_client.declare_publish_exchange(None)
+
+    @mock.patch.object(os.path, "exists")
+    @mock.patch.object(Connection, "__init__")
+    @mock.patch.object(Amqp, "disconnect")
+    @mock.patch.object(Connection, "channel")
+    @mock.patch.object(Resource, "acquire")
+    @mock.patch.object(Producer, "__init__")
+    @mock.patch.object(Producer, "publish")
+    def test_publish_implementation(self, mocked_producer_publish, mocked_producer_init, mocked_acquire,
+                                    mocked_channel, mocked_disconnect, mocked_connection_init, mocked_exists):
+        """
+        Test the publish method implementation.
+        :param mocked_producer_publish: Mocked publish method from Producer class 
+        :param mocked_producer_init: Mocked init method from Producer class
+        :param mocked_acquire: Mocked acquire method from Resource class
+        :param mocked_channel: Mocked channel from Connection class 
+        :param mocked_disconnect: Mocked disconenct from Amqp class
+        :param mocked_connection_init: Mocked init from Connection class
+        :param mocked_exists: Mocked exists from os.path
+        :return: None
+        """
+
+        # Assign the return values to mocked methods
+        mocked_producer_publish.return_value = None
+        mocked_connection_init.return_value = None
+        mocked_exists.return_value = True
+        mocked_producer_init.return_value = None
+
+        # Setup ssl options
+        ssl_details = {'ca_certs': self.identity.root_ca_cert,
+                       'certfile': self.identity.cert_file,
+                       'keyfile': self.identity.key_file,
+                       'cert_reqs': getattr(ssl, self.tls_conf.cert_required),
+                       'ssl_version': getattr(ssl, self.tls_conf.tls_version),
+                       'ciphers': self.tls_conf.cipher}
+
+        amqp_connection = Connection(hostname=self.url, port=self.port, transport="pyamqp",
+                                     userid=self.identity.username if self.enable_authentication else None,
+                                     password=self.identity.password if self.enable_authentication else None,
+                                     ssl=ssl_details if self.tls_conf else False,
+                                     connect_timeout=self.connection_timeout_sec)
+
+        # Return connection object from acquire
+        mocked_acquire.return_value = amqp_connection
+
+        # Return mock connection channel from channel
+        mocked_channel.return_value = "Connection channel"
+
+        # Create amqp client
+        self.amqp_client = Amqp(self.url, self.port, self.identity, self.tls_conf, self.enable_authentication,
+                                self.connection_timeout_sec)
+
+        self.amqp_client.publish("Test exchange", "Test-route-key", "Test message", DEFAULT_PUBLISH_PROPERTIES)
+
+        # Check publish called with following params
+        mocked_producer_publish.assert_called_with(body="Test message", exchange="Test exchange",
+                                                   routing_key="Test-route-key",
+                                                   content_type=DEFAULT_PUBLISH_PROPERTIES['content_type'],
+                                                   delivery_mode=DEFAULT_PUBLISH_PROPERTIES['delivery_mode'],
+                                                   headers=DEFAULT_PUBLISH_PROPERTIES['headers'])
+
+    @mock.patch.object(os.path, "exists")
+    @mock.patch.object(Connection, "__init__")
+    @mock.patch.object(Amqp, "disconnect")
+    @mock.patch.object(Connection, "channel")
+    @mock.patch.object(Resource, "acquire")
+    @mock.patch.object(Producer, "__init__")
+    @mock.patch.object(Producer, "publish")
+    def test_publish_implementation_exception_flow(self, mocked_production_publish, mocked_producer_init,
+                                                   mocked_acquire, mocked_channel, mocked_disconnect,
+                                                   mocked_connection_init, mocked_exists):
+        """
+        Test the publish method exception flow.
+        :param mocked_production_publish: Mocked publish method from Producer class 
+        :param mocked_producer_init: Mocked init from Producer class
+        :param mocked_acquire: Mocked acquire from Resource class
+        :param mocked_channel: Mocked channel from Connection class
+        :param mocked_disconnect: Mocked disconnect from Amqp class
+        :param mocked_connection_init: Mocked init from Connection class
+        :param mocked_exists: Mocked exists from os.path
+        :return: None
+        """
+        # Assign return value to mocked methods
+        mocked_producer_init.return_value = None
+        mocked_connection_init.return_value = None
+        mocked_exists.return_value = True
+        # Assign method to be invoked on calling the mocked method
+        mocked_production_publish.side_effect = mock_exception
+
+        # Setup ssl options
+        ssl_details = {'ca_certs': self.identity.root_ca_cert,
+                       'certfile': self.identity.cert_file,
+                       'keyfile': self.identity.key_file,
+                       'cert_reqs': getattr(ssl, self.tls_conf.cert_required),
+                       'ssl_version': getattr(ssl, self.tls_conf.tls_version),
+                       'ciphers': self.tls_conf.cipher}
+
+        amqp_connection = Connection(hostname=self.url, port=self.port, transport="pyamqp",
+                                     userid=self.identity.username if self.enable_authentication else None,
+                                     password=self.identity.password if self.enable_authentication else None,
+                                     ssl=ssl_details if self.tls_conf else False,
+                                     connect_timeout=self.connection_timeout_sec)
+
+        # Return connection object from acquire
+        mocked_acquire.return_value = amqp_connection
+
+        # Return mock connection channel from channel
+        mocked_channel.return_value = "Connection channel"
+
+        # Create amqp client
+        self.amqp_client = Amqp(self.url, self.port, self.identity, self.tls_conf, self.enable_authentication,
+                                self.connection_timeout_sec)
+
+        # Check Amqp not raising the exception
+        self.amqp_client.publish("Test exchange", "Test-route-key", "Test message", DEFAULT_PUBLISH_PROPERTIES)
+
+    @mock.patch.object(os.path, "exists")
+    @mock.patch.object(Connection, "__init__")
+    @mock.patch.object(Amqp, "disconnect")
+    @mock.patch.object(Connection, "channel")
+    @mock.patch.object(Resource, "acquire")
+    @mock.patch.object(Producer, "__init__")
+    @mock.patch.object(Connection, "release")
+    def test_disconnect_producer_implementation(self, mocked_connection_release, mocked_production_init, mocked_acquire,
+                                                mocked_channel, mocked_disconnect, mocked_connection_init,
+                                                mocked_exists):
+        """
+        Test the disconnect_producer method implementation.
+        :param mocked_connection_release: Mocked release from Connection class 
+        :param mocked_production_init: Mocked init from Producer class
+        :param mocked_acquire: Mocked acquire from Resource class
+        :param mocked_channel: Mocked channel from Connection class
+        :param mocked_disconnect: Mocked disconnect from Amqp class
+        :param mocked_connection_init: Mocked __init__ from Connection class
+        :param mocked_exists: Mocked exists from os.path
+        :return: None 
+        """
+
+        # Assign return value to mocked methods
+        mocked_production_init.return_value = None
+        mocked_connection_init.return_value = None
+        mocked_exists.return_value = True
+
+        # Setup ssl options
+        ssl_details = {'ca_certs': self.identity.root_ca_cert,
+                       'certfile': self.identity.cert_file,
+                       'keyfile': self.identity.key_file,
+                       'cert_reqs': getattr(ssl, self.tls_conf.cert_required),
+                       'ssl_version': getattr(ssl, self.tls_conf.tls_version),
+                       'ciphers': self.tls_conf.cipher}
+
+        amqp_connection = Connection(hostname=self.url, port=self.port, transport="pyamqp",
+                                     userid=self.identity.username if self.enable_authentication else None,
+                                     password=self.identity.password if self.enable_authentication else None,
+                                     ssl=ssl_details if self.tls_conf else False,
+                                     connect_timeout=self.connection_timeout_sec)
+
+        # Return connection object from acquire
+        mocked_acquire.return_value = amqp_connection
+
+        # Return mock connection channel from channel
+        mocked_channel.return_value = "Connection channel"
+
+        # Create amqp client
+        self.amqp_client = Amqp(self.url, self.port, self.identity, self.tls_conf, self.enable_authentication,
+                                self.connection_timeout_sec)
+
+        # Call disconnect_producer
+        self.amqp_client.disconnect_producer()
+
+        # Check underline implementation making the release method call
+        mocked_connection_release.assert_called()
+
+        # Check _publisher_connection is None
+        self.assertIsNone(self.amqp_client._publisher_connection)
+
+        # Check _producer is None
+        self.assertIsNone(self.amqp_client._producer)
+
+    @mock.patch.object(Amqp, "_initialize_producer")
+    @mock.patch.object(os.path, "exists")
+    @mock.patch.object(Connection, "__init__")
+    @mock.patch.object(Amqp, "disconnect")
+    @mock.patch.object(Resource, "acquire")
+    @mock.patch.object(ConsumerWorkerThread, "__init__")
+    @mock.patch.object(ConsumerWorkerThread, "stop")
+    @mock.patch.object(Connection, "release")
+    def test_disconnect_consumer_implementation(self, mocked_connection_release, mocked_worker_stop, mocked_worker_init,
+                                                mocked_acquire, mocked_disconnect, mocked_init, mocked_exists,
+                                                mocked_initialize_producer):
+        """
+        Test the implementation of disconnect_consumer method implementation.
+        :param mocked_connection_release: Mocked release method from Connection class 
+        :param mocked_worker_stop: Mocked stop method from ConsumerWorkerThread class
+        :param mocked_worker_init: Mocked init method from ConsumerWorkerThread class
+        :param mocked_acquire: Mocked require method from Resource class
+        :param mocked_disconnect: Mocked disconnect method from Amqp class
+        :param mocked_init: Mocked init method from Connection class
+        :param mocked_exists: Mocked exists method from os.path
+        :param mocked_initialize_producer: Mocked _initialize_producer method from Amqp class
+        :return: None
+        """
+
+        # Assign None return value to mocked methods
+        mocked_init.return_value = None
+        mocked_worker_init.return_value = None
+        mocked_exists.return_value = True
+
+        # Setup ssl options
+        ssl_details = {'ca_certs': self.identity.root_ca_cert,
+                       'certfile': self.identity.cert_file,
+                       'keyfile': self.identity.key_file,
+                       'cert_reqs': getattr(ssl, self.tls_conf.cert_required),
+                       'ssl_version': getattr(ssl, self.tls_conf.tls_version),
+                       'ciphers': self.tls_conf.cipher}
+
+        amqp_connection = Connection(hostname=self.url, port=self.port, transport="pyamqp",
+                                     userid=self.identity.username if self.enable_authentication else None,
+                                     password=self.identity.password if self.enable_authentication else None,
+                                     ssl=ssl_details if self.tls_conf else False,
+                                     connect_timeout=self.connection_timeout_sec)
+
+        # Return connection object from acquire
+        mocked_acquire.return_value = amqp_connection
+
+        # Create Amqp client
+        amqp_client = Amqp(self.url, self.port, self.identity, self.tls_conf,
+                           self.enable_authentication, self.connection_timeout_sec)
+
+        # Initialise the consumer connection
+        amqp_client.consume(self.amqp_msg_attr)
+
+        # Call disconnect consumer method
+        amqp_client.disconnect_consumer()
+
+        # Check release method call has been made
+        mocked_connection_release.assert_called()
+
+        # Check the stop method call has been made
+        mocked_worker_stop.assert_called()
 
 
 if __name__ == '__main__':
