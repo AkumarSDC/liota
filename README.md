@@ -158,6 +158,8 @@ GraphiteIP = <The IP address of the graphite instance you just brought up>
 GraphitePort = <typically 2003> # You can test easily by sending directly to carbon
 ```
 
+
+
 and execute
 ```bash
   $ sudo nohup python simulated_graphite_event_based.py &
